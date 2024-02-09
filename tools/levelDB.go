@@ -68,11 +68,6 @@ func getStateForContract(db ethdb.Database, stateRootNode common.Hash, addr stri
 	if err := rlp.DecodeBytes(addrState, &values); err != nil {
 		panic(err)
 	}
-
-	fmt.Println("values", values)
-
-	//  scp -r blast-test:/home/ec2-user/deployment/data /Users/primusa/blast-data
-	// go run -x main.go /Users/primusa/blast-data/data/geth/chaindata 4200000000000000000000000000000000000023
 	// decoded value must be length 4
 	// 0: nonce
 	// 1: balance
@@ -80,7 +75,7 @@ func getStateForContract(db ethdb.Database, stateRootNode common.Hash, addr stri
 	// 3: code hash
 
 	// get the storage trie
-	storageTrie, _ := trie.New(trie.StorageTrieID(stateRootNode, common.BytesToHash(values[2]), common.BytesToHash(values[2])), trieDB)
+	storageTrie, _ := trie.New(trie.StorageTrieID(stateRootNode, addrHash, common.BytesToHash(values[2])), trieDB)
 	storageIterator, _ := storageTrie.NodeIterator(nil)
 	it := trie.NewIterator(storageIterator)
 	for it.Next() {
