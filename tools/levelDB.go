@@ -64,18 +64,30 @@ func getStateForContract(db ethdb.Database, stateRootNode common.Hash, addr stri
 	addrHash := crypto.Keccak256Hash(common.Hex2Bytes(addr))
 
 	addrState, _ := treeState.Get(addrHash.Bytes())
+	fmt.Println("state", addrState)
 	var values [][]byte
 	if err := rlp.DecodeBytes(addrState, &values); err != nil {
 		panic(err)
 	}
-	// decoded value must be length 4
-	// 0: nonce
-	// 1: balance
-	// 2: storage trie
-	// 3: code hash
+
+	var storageIdx int
+	if len(values) == 4 {
+		// decoded value is length 4
+		// 0: nonce
+		// 1: balance
+		// 2: storage trie
+		// 3: code hash
+		storageIdx = 2
+	} else if len(values) == 7 {
+		// from guess and check, the length of value is 7 on blast
+		// and the storage index is 5
+		storageIdx = 5
+	} else {
+		panic("invalid length")
+	}
 
 	// get the storage trie
-	storageTrie, _ := trie.New(trie.StorageTrieID(stateRootNode, addrHash, common.BytesToHash(values[2])), trieDB)
+	storageTrie, _ := trie.New(trie.StorageTrieID(stateRootNode, addrHash, common.BytesToHash(values[storageIdx])), trieDB)
 	storageIterator, _ := storageTrie.NodeIterator(nil)
 	it := trie.NewIterator(storageIterator)
 	for it.Next() {
