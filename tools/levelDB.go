@@ -64,7 +64,6 @@ func getStateForContract(db ethdb.Database, stateRootNode common.Hash, addr stri
 	addrHash := crypto.Keccak256Hash(common.Hex2Bytes(addr))
 
 	addrState, _ := treeState.Get(addrHash.Bytes())
-	fmt.Println("state", addrState)
 	var values [][]byte
 	if err := rlp.DecodeBytes(addrState, &values); err != nil {
 		panic(err)
